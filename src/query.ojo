@@ -1,0 +1,375 @@
+<?xml version="1.0"?>
+<BES>
+  <Wizard>
+    <Title>BigFix Query</Title>
+    <UIHooks LaunchType="Document" RequiresAuthoring="false" Menu="Dashboards"></UIHooks>
+    <DefaultPage>Page1</DefaultPage>
+   <Page Name="Page1" DocType="HTML 4.01 Transitional" > 
+   <Title>BigFix Query</Title>
+      <HTML>
+		<![CDATA[
+		
+<!-- //Attach jquery Library -->
+<link rel="stylesheet" type="text/css" href="jquery-ui-1.8.18.custom.css" />		
+<script type="text/javascript" src="jquery-1.7.1.js"></script>
+<script type="text/javascript" src="jquery-ui-1.8.17.custom.js"></script>
+
+<link rel="stylesheet" type="text/css" href="jquery.dataTables.css">	
+<script type="text/javascript" src="jquery.dataTables.js"></script>
+
+<!-- //Attach bigfixme Dashboard Framework Library -->
+<link rel="stylesheet" type="text/css" href="bigfixme-ui.0.0.1.css" />		
+<script type="text/javascript" src="bigfixme.0.0.1.js"></script>
+<script type="text/javascript" src="bigfixme-api.0.0.1.js"></script>
+<script type="text/javascript" src="bigfixme-ui.0.0.1.js"></script>
+<script type="text/javascript" src="common.js"></script>
+
+<script type="text/javascript" src="json3.js"></script>
+
+<link rel="stylesheet" type="text/css" href="reveal.css">
+<script type="text/javascript" src="jquery.reveal.js"></script>
+
+<link rel="stylesheet" type="text/css" href="bootstrap.css">
+<script type="text/javascript" src="bootstrap.js"></script>
+
+<link rel="stylesheet" type="text/css" href="select2.css">
+<script type="text/javascript" src="select2.js"></script>
+
+<link rel="stylesheet" type="text/css" href="query.css">
+
+
+<script language="javascript">	
+	//now we will call a few functions to get things started
+	$(function(){
+
+		setupButtons();		//initialize buttons and add functionality to each of them
+		setupDataTable();
+		//$('select').select2();
+		loadGroups();
+		$('#propertybox').select2();
+		
+		window.setInterval(function(){
+			if(!lastQueryID) {clearResults(); return; }
+			
+			if($("#queryResultsDiv").css('visibility') !== "hidden"){
+				loadResults();
+			} else {
+				clearResults();
+			}
+		}, 1000);
+		
+
+	});
+	
+	var queryResults;
+	var lastQueryID;
+	var resultCount = 0;
+	var loadIncrememt = 100;
+	var groupEntries = [];
+	
+	function setupDataTable() {
+		var iSDataSet = new Array();
+		queryResults = $('#queryResults').dataTable( {
+				"aaData": iSDataSet,
+				"bAutoWidth": false,
+				"bInfo": false,
+				"iDisplayLength": 20,
+				"bResetDisplay": false,
+				"bPaginate": true,
+				"bSortClasses": false,
+				"stripe": false,
+				"aoColumns": [ 
+					{ "sTitle": "Computer", "sWidth": "20%", "sClass": "dt-center"},
+					{ "sTitle": "Result", "sWidth": "80%", "sClass": "dt-center"}
+				]
+		} );
+	}
+	
+	function createAnalysis(relevance) {
+		//alert("Test: " + relevance);
+		xml = '' + 
+		'<?xml version="1.0"?>' + '\n' +
+		'<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">' + '\n' +
+			'<Analysis>' + '\n' +
+				'<Title>New Analysis from Query</Title>' + '\n' +
+				'<Description>enter a description of the analysis here</Description>' + '\n' +
+				'<Relevance>true</Relevance>' + '\n' +
+				'<Source>Internal</Source>' + '\n' +
+				'<SourceReleaseDate>2016-04-17</SourceReleaseDate>' + '\n' +
+				'<Domain>BESC</Domain>' + '\n' +
+				'<Property Name="new property" ID="1" EvaluationPeriod="PT15M">' + relevance + '</Property>' + '\n' +
+			'</Analysis>' + '\n' +
+		'</BES>' + '\n';
+		
+		//alert("xml: " + xml);
+		xml = unescape(encodeURIComponent(xml));
+		
+		//alert("xml: " + xml);
+		bigfix.analyses.add(xml, 'ActionSite');
+	}
+	
+	function evaluate(relevance){
+		
+		var group = getSelectedGroup();
+		
+		
+		var site = group.site;
+		var group = group.name;
+		//alert("site:" + site + ":");
+		//alert("group:" + group + ":");
+		var xml = '' +
+		'<BESAPI>' +
+			'<ClientQuery>' +
+				'<ApplicabilityRelevance>true</ApplicabilityRelevance>' +
+				'<QueryText>' + relevance + '</QueryText>' + 
+				'<Target>' +
+					'<ComputerGroup>' +
+						'<Name>' + group + '</Name>' +
+						'<SiteName>' + site + '</SiteName>' +
+					'</ComputerGroup>' + 
+				'</Target>' + 
+			'</ClientQuery>' +
+		'</BESAPI>';
+
+		//alert("xml: " + xml);
+		var postURL = "clientquery";
+		API.Post(postURL, xml, function(error, status, body) {
+					if(status == 200){
+						//alert(body);
+						
+						xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+						xmlDoc.async=false;
+						xmlDoc.loadXML(body);
+						
+						var besAPI = xmlDoc.getElementsByTagName("BESAPI")[0];
+						var clientQuery = besAPI.getElementsByTagName("ClientQuery ")[0];
+						var ID = clientQuery.getElementsByTagName("ID")[0].childNodes[0].nodeValue;
+						
+						//alert("Saving ID: " + ID)
+						lastQueryID = ID;
+					}else{
+						//alert("failed");
+						//alert(JSON.stringify(error));
+					}
+		});
+		loadResults();
+	}
+	function getXmlString(xml) {
+	  if (window.ActiveXObject) { return xml.xml; }
+		return new XMLSerializer().serializeToString(xml);
+	}
+
+	function clearResults() {
+		lastQueryID = null;
+		queryResults.fnClearTable();
+		queryResults.fnDraw();
+		resultCount = 0;
+	}
+	
+	function loadResults() {
+		if(!lastQueryID) {return;}
+		
+		var getURL = "clientqueryresults/" + lastQueryID + "?start=" + resultCount + "&count=" + loadIncrememt;
+		//alert("Trying: " + getURL);
+		
+		results = [];
+		API.Get(getURL, function(error, status, body) {
+					if(status == 200){
+						//alert(body);
+						
+						xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+						xmlDoc.async=false;
+						xmlDoc.loadXML(body);
+						
+						var besAPI = xmlDoc.getElementsByTagName("BESAPI")[0];
+						//alert(getXmlString(besAPI)); 
+						var clientQuery = besAPI.getElementsByTagName("ClientQueryResults")[0];
+						//alert("clientQuery: " + getXmlString(clientQuery)); 
+						
+						var restResults = clientQuery.childNodes;
+						//alert("Results: " + getXmlString(restResults)); 
+						//alert("length: " + restResults.length);
+						
+						resultCount += restResults.length;
+						
+						for (var i = 0; i < restResults.length; i ++) {
+							results.push({
+								computername: restResults[i].getElementsByTagName("ComputerName")[0].childNodes[0].nodeValue,
+								result: restResults[i].getElementsByTagName("Result")[0].childNodes[0].nodeValue
+							});
+							//alert(Results[i].getElementsByTagName("ComputerName")[0].childNodes[0].nodeValue);
+							//alert(Results[i].getElementsByTagName("Result")[0].childNodes[0].nodeValue);
+						}
+						
+						loadData(results);
+					}else{
+						//alert("failed");
+						//alert(JSON.stringify(error));
+					}
+		});
+	}
+	
+	function loadGroups () {
+		
+		$('#propertybox').empty();
+		//alert("Getting Sites");
+		var sites = bigfix.relevance.evaluate("unique values of names of all bes sites whose (custom site flag of it)");
+			
+		for (var site in sites) {
+			var siteName = sites[site];
+			//alert("processing site: " + siteName);
+			//alert("Getting Groups");
+			var groups = bigfix.relevance.evaluate('unique values of names of bes computer groups whose (name of site of it = "' + siteName + '")');
+			
+			for (var group in groups) {
+				var groupName = groups[group]; 
+				//alert("processing group: " + groupName);
+				
+				var applicableCount = bigfix.relevance.evaluate('number of members of bes computer group whose (name of site of it = "' + siteName + '" and name of it = "' + groupName + '")');
+				
+				//alert("ApplicableCount: " + applicableCount);
+				groupEntries.push({
+					name: groupName,
+					count: applicableCount, 
+					site: siteName
+				});
+			}
+		}
+		groupEntries.sort(dynamicSort("site"));
+		groupEntries.sort(dynamicSort("name"));
+		for (var i = 0; i < groupEntries.length; i++) { 
+			$('#propertybox').append($('<option>', {value:i, text:(groupEntries[i].name + " (" + groupEntries[i].count + " Devices)")}));
+		}
+	}
+	
+	function dynamicSort(property) {
+		var sortOrder = 1;
+		if(property[0] === "-") {
+			sortOrder = -1;
+			property = property.substr(1);
+		}
+		return function (a,b) {
+			var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+			return result * sortOrder;
+		}
+}	
+	
+	function getSelectedGroup (){
+		var index = $("#propertybox option:selected").val();
+		
+		return groupEntries[index];
+	}
+	
+	jQuery.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
+    if(oSettings.oFeatures.bServerSide === false){
+        var before = oSettings._iDisplayStart;
+ 
+        oSettings.oApi._fnReDraw(oSettings);
+ 
+        // iDisplayStart has been reset to zero - so lets change it back
+        oSettings._iDisplayStart = before;
+        oSettings.oApi._fnCalculateEnd(oSettings);
+    }
+ 
+    // draw the 'current' page
+    oSettings.oApi._fnDraw(oSettings);
+	};
+
+	function loadData(results) {
+		if(!results) {return;}
+		//queryResults.fnClearTable();
+		//alert("parsing");
+		for (var i = 0; i < results.length; i++) {
+			/*alert("result: " + results[i]);
+			//alert("name: " + results[i].computername);
+			//alert("name: " + results[i].result);*/
+			var uiArray = [ results[i].computername, results[i].result];
+			
+			queryResults.fnAddData( uiArray, false );
+			
+		}
+		//alert("Reset?");
+		queryResults.fnStandingRedraw(false); 
+		//alert("Reset!");		
+	}
+	
+	//this function is called during document load method
+	//within we are configuring graphical buttons and linking click functionality
+	function setupButtons() {
+		
+		//add functionality to the refresh button to make it reload data upon click
+		$("*[bigfixRole='refreshButton']").click(function() {
+			bigfix.ui.ShowLoading();
+
+			loadResults();
+			
+			//bigfix.ui.TimeStamp(new Date());
+			bigfix.ui.HideLoading()
+		});
+				
+	}
+	
+	function revealModal(modal) {
+	$(".ui-widget-overlay").css({
+		background: "#000",
+		opacity: 0.8
+	});
+	$(modal).reveal({
+		animation: 'fade', //fade, fadeAndPop, none
+		animationspeed: 300, //how fast animations are
+		closeonbackgroundclick: true, //if you click background will modal close?
+		dismissmodalclass: 'cancel-reveal-modal' //the class of a button or element that will close an open modal
+	});
+}
+				
+</script>
+<div class="width">
+	<div class="row-fluid">
+		<div class="span12"></div>
+				
+		<div class="span12">
+			<h3>Query Targeting</h3>
+			<p>Select a computer group to target your query</p>
+		</div>
+		<div class="span12">
+			<select id="propertybox" class="span10"></select>
+		</div>
+		
+		<div class="span12">
+			<h3>Client Relevance Query</h3>
+			<p>Enter a client relevance expression in the box below, select a target for your query, and hit submit to start seeing results</p>
+		</div>
+		<div class="span12">
+			<div class="input">
+				<textarea class="form-control span10" rows="4"  id="relevance"></textarea>
+			</div>
+		</div>
+		<div class="span12">
+			<div class="span3">
+				<button class="btn btn-medium" type="button" onclick='createAnalysis(document.getElementById("relevance").value)'>Create Analysis</button>
+			</div>
+			<div class="span3 offset6">
+				<button class="btn btn-info btn-medium" type="button" onclick='clearResults();evaluate(document.getElementById("relevance").value);revealModal("#queryResultsDiv");'>Query</button>
+			</div>
+		</div>
+		<div class="span12"></div>
+	</div>
+</div>
+
+<!-- //CREATE WINDOW MODAL -->		
+<div id="queryResultsDiv" class="row-fluid reveal-modal xlarge">
+	<div class="span12">
+		<div class="span12">
+			<h1>Query Results</h1>
+		</div>
+		<div class="span12">
+			<table cellpadding="0" cellspacing="0" border="0" class="compact hover row-border stripe" id="queryResults"><tbody></tbody></table>
+		</div>
+	</div>
+</div>
+		]]>
+	   </HTML>
+	 </Page>
+   </Wizard>
+</BES>
+

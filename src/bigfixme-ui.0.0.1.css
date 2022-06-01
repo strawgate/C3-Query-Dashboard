@@ -1,0 +1,317 @@
+/**
+ * (C) Copyright Moran, Inc. 2013.  All Rights Reserved.
+ * 
+ * bigfix Dashboard Framework v0.0.1
+ */
+
+* {
+	font-family: Verdana, Arial;
+	font-size: 8pt;
+}
+
+body {
+	margin: 8px;
+	margin-top: 12px;
+}
+
+a {
+	color:#00f;
+	text-decoration: underline;
+	cursor: pointer;
+}
+a:hover {
+	text-decoration: none;
+}
+
+
+
+.bigfix-header-navigation {
+	position:absolute;
+	top:-2px;
+	right:0px;
+	/*border:1px solid #a4b7d3; */
+	border-right:none; 
+	padding:0; 
+	margin:0;
+	margin-bottom:5px; 
+	margin-right:1px; 
+	/*background-color: #d4e0f2;*/
+	padding-left:2px;
+	padding-right:4px;
+	padding-bottom:2px;
+}
+
+
+.bigfix-header {
+	padding: 0px;
+	padding-bottom: 2px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 5px;
+}
+
+.bigfix-header-title {
+	padding-left:5px;
+	padding-bottom:10px;
+	border-bottom: 1px solid #e3e3e3;
+	font-size: 18px; 
+}
+
+
+.bigfix-timestamp {
+	text-align: right;
+	vertical-align: top;
+	position: relative;
+	top: 0px;
+	right: 24px;
+	margin-bottom: 12px;
+	font-size: 11px;
+	font-weight: bold;
+	color: #999999;
+}
+
+.bigfix-body-noheader {
+	margin-top: 7px;
+}
+
+
+
+
+
+.bigfix-error {
+	background:#fff3f3;
+	border-color:rgb(205, 49, 42);
+}
+
+.bigfix-warning {
+	background:#ffffec;
+	border-color:rgb(221, 115, 28);
+}
+
+.bigfix-success {
+	background:#edf8eb;
+	border-color:rgb(46, 151, 0);
+}		
+
+.bigfix-information {
+	background:#f0faff;
+	border-color:rgb(0, 128, 184);
+}
+
+.bigfix-notification-text {
+	padding:5px;
+	margin:0px;
+	font-weight:bold;
+	display: block;
+}
+
+
+.bigfix-analysisWarning-list {
+	margin-top:0px;
+	float:left;
+	margin-right:10px;
+}
+
+/* For modern browsers */
+.bigfix-container:before,
+.bigfix-container:after {
+    content:"";
+    display:table;
+}
+.bigfix-container:after {
+    clear:both;
+}
+/* For IE 6/7 (trigger hasLayout) */
+.bigfix-container {
+    zoom:1;
+}
+
+.bigfix-notification-description {
+	border-top:1px dotted #999999;
+	display: block;
+	margin:0px;
+	margin-top:5px;
+	margin-bottom:5px;
+	padding-top: 5px;
+}
+
+.bigfix-notification {
+	border-radius:2px;
+	margin:10px 5px 10px 5px;
+	border-width: 2px;
+	border-style: solid;
+	color: rgb(34,34,34);
+	overflow:hidden; /*used to clear floats */
+	padding: 5px 10px 5px 10px;
+}
+
+.bigfix-notification-description {
+	border-top:1px dotted #999999;
+	display: block;
+	margin:0px;
+	margin-top:5px;
+	margin-bottom:5px;
+	padding-top: 5px;
+}
+
+.bigfix-notification-actionContainer {
+	float:right;
+	padding: 3px;
+}
+
+.bigfix-notification-closeLinkContainer {
+	margin-right:5px;
+	margin-left:5px;
+	background-image: url('close.png');
+}
+
+.bigfix-notification-closeLink {
+	vertical-align:top;
+	cursor: pointer;
+}
+
+.bigfix-indicator {
+	float:left;
+	margin:3px;
+	height:16px;
+	width:16px;
+	display:inline-block; 
+}
+
+.bigfix-error-indicator {
+	background-image: url('message_error_16.png');
+}
+
+.bigfix-warning-indicator {
+	background-image: url('message_warning_16.png');
+}
+
+.bigfix-success-indicator {
+	background-image: url('message_success_16.png');
+}
+
+.bigfix-information-indicator {
+	background-image: url('message_information_16.png');
+}
+
+
+.bigfix-indicator.large {
+	height:24px;
+	width:24px;
+    background-image:url('msgIcons_24bit.png');
+    background-repeat: no-repeat;
+}
+
+.bigfix-error-indicator.large {
+    background-position: 0px -18px;
+}
+
+.bigfix-warning-indicator.large {
+    background-position: -24px -18px;
+}
+
+.bigfix-success-indicator.large {
+    background-position: -72px -18px;
+}
+
+.bigfix-information-indicator.large {
+    background-position: -96px -18px;
+}
+
+.bigfix-question-indicator.large {
+    background-position: -48px -18px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.bigfix-footer {
+	border-top: 1px solid #efefef;
+	width: 100%;
+	padding: 0px;
+	padding-top: 5px;
+	font-weight: bold;
+	margin-top: 15px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-bottom: 5px;
+	font-size: 18px; 
+	color: #555555;	
+	font-family: Helvetica, Geneva, Arial, SunSans-Regular, sans-serif;
+	text-align: center;
+}
+.bigfix-hidden-footer-link {
+	color:black;
+}
+.bigfix-footer a {
+	color:#efefef;
+	text-decoration: underline;
+	cursor: pointer;
+}
+.bigfix-footer a:hover {
+	color:#898989;
+	text-decoration: none;
+}
+
+#bigfix-hidden-footer-title {
+	text-align: left;
+	background-color: #efefef;
+	margin-bottom:4px;
+	font-weight: bold;
+	padding: 8px;
+	padding-left:60px;
+	padding-right:60px;
+	border: 1px solid #dedede;
+ }
+
+#bigfix-hidden-text {
+	padding-left:60px;
+	padding-top:0px;
+	padding-bottom:5px;
+}
+#bigfix-hidden-text a {
+	color:#101010;
+	text-decoration: underline;
+	cursor: pointer;
+}
+#bigfix-hidden-text a:hover {
+	color:#434343;
+	text-decoration: none;
+}
+
+#bigfix-hidden-footer {
+	text-align: left;
+	border: 2px solid #dedede;
+	background:white;
+	
+	-webkit-box-shadow: 7px 7px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    7px 7px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         7px 7px 5px rgba(50, 50, 50, 0.75);
+
+}
+
+#bigfix-logo
+{
+	margin-left:1px;
+	margin-top:-37px;
+	height:56px;
+	width:55px;
+
+    cursor:pointer;
+    background: url(logo.png) no-repeat center 3px;
+    	
+	
+	position:absolute;
+	z-order:999999;    
+}

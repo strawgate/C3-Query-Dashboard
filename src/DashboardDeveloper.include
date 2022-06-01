@@ -1,0 +1,16 @@
+//Dashboard Developer Include file
+//You can specify relative or full paths to folders or files to be included in your project.
+//The following files/folders are included in this project.
+
+//include jQuery Library
+..\Libraries\jquery
+..\Libraries\jquery.reveal
+..\Libraries\jquery.datatables
+
+//include bigfixme Dashboard Framework Library
+..\Libraries\bigfixme
+..\Libraries\bootstrap2
+
+..\Libraries\jquery.reveal
+..\Libraries\json3
+..\Libraries\select2
