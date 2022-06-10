@@ -2,6 +2,10 @@
 
 This repository contains a BigFix console dashboard that allows you to use BigFix Query from the Windows console.
 
+## Requirements
+
+You must be licensed for BigFix Query which generally requires a lifecycle license.
+
 ## Installation
 
 I prefer to put dashboards in their own sites so I would create a new site called "C3 Query Dashboard", click Files under the site, right click and `Add Files...`
